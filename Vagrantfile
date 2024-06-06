@@ -1,4 +1,3 @@
-
 require "yaml"
 vagrant_root = File.dirname(File.expand_path(__FILE__))
 settings = YAML.load_file "#{vagrant_root}/settings.yaml"
@@ -28,7 +27,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "controlplane" do |controlplane|
     controlplane.vm.hostname = "controlplane"
-    controlplane.vm.network "private_network", ip: settings["network"]["control_ip"]
+    controlplane.vm.network "private_network", guest: 6443, host: 6443 # Port forwarding for API server
     if settings["shared_folders"]
       settings["shared_folders"].each do |shared_folder|
         controlplane.vm.synced_folder shared_folder["host_path"], shared_folder["vm_path"]
@@ -64,7 +63,7 @@ Vagrant.configure("2") do |config|
 
     config.vm.define "node0#{i}" do |node|
       node.vm.hostname = "node0#{i}"
-      node.vm.network "private_network", ip: IP_NW + "#{IP_START + i}"
+      node.vm.network "private_network", guest: (30000 + i), host: (30000 + i) # Port forwarding for each worker node
       if settings["shared_folders"]
         settings["shared_folders"].each do |shared_folder|
           node.vm.synced_folder shared_folder["host_path"], shared_folder["vm_path"]
@@ -95,4 +94,4 @@ Vagrant.configure("2") do |config|
     end
 
   end
-end 
+end
